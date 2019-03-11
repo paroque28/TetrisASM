@@ -59,15 +59,17 @@ start_row_col:   equ 0x0412
 %macro init_screen 0
 	clear_screen
 	mov dh, 1                    ; row
-	mov cx, 20                       ; number of rows
+	mov cx, 22                       ; number of rows
 ia: push cx
 	inc dh                           ; increment row
 	mov dl, field_left_col           ; set column
 	mov cx, field_width              ; width of box
 	mov bx, 0xFF                     ; color
 	call set_and_write
-	cmp dh, 21                       ; don't remove last line
+	cmp dh, 23                       ; don't remove last line
 	je ib                            ; if last line jump
+	cmp dh, 2                       ; don't remove first line
+	je ib                            ; if first line jump
 	inc dx                           ; increase column
 	mov cx, inner_width              ; width of box
 	xor bx, bx                       ; color
