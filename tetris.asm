@@ -263,14 +263,15 @@ menu
 
 start_tetris1:
 	mov word [speed], 4000
-	call start_tetris
+	mov byte [level], 0x01
+	je	start_tetris
 start_tetris2:
 	mov word [speed], 2000
-	;call draw_msg_level
+	mov byte [level], 0x02
 	je	start_tetris
 start_tetris3:
 	mov word [speed], 500
-	;call draw_msg_level
+	mov byte [level], 0x03
 	je	start_tetris
 
 
@@ -285,7 +286,7 @@ start_tetris:
 	
 clear:
 	init_screen
-	call msglvl1
+	call draw_msg_level
 
 new_brick:
 	mov byte [delay], 100            ; 3 * 100 = 300ms
@@ -602,14 +603,27 @@ halt:
 	ret
 ; ==============================================================================
 ;Select the level indicator msg
-;draw_msg_level:
-;	cmp byte [level], 0x01
-;	je msglvl1
-;	cmp byte [level], 0x02
-;	je msglvl2
-;	cmp byte [level], 0x03
-;	je msglvl3
-;	ret
+draw_msg_level:
+	cmp byte [level], 0x01
+	je msglvl1
+	cmp byte [level], 0x02
+	je msglvl2
+	cmp byte [level], 0x03
+	je msglvl3
+	ret
+
+;Level selection	
+level1:
+	mov byte [level], 0x01
+	jmp	start_tetris
+
+level2:
+	mov byte [level], 0x02
+	jmp	start_tetris
+
+level3:
+	mov byte [level], 0x03
+	jmp	start_tetris
 
 bricks:
 	;  in AL      in AH
