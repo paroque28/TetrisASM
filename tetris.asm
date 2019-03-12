@@ -7,6 +7,8 @@
 ; We need to manually set the DS register so it can properly find our variables
 
 
+mov ax, cs
+mov ds, ax   	; 
 
 
 
@@ -59,17 +61,15 @@ start_row_col:   equ 0x0412
 %macro init_screen 0
 	clear_screen
 	mov dh, 1                    ; row
-	mov cx, 22                       ; number of rows
+	mov cx, 20                       ; number of rows
 ia: push cx
 	inc dh                           ; increment row
 	mov dl, field_left_col           ; set column
 	mov cx, field_width              ; width of box
 	mov bx, 0xFF                     ; color
 	call set_and_write
-	cmp dh, 23                       ; don't remove last line
+	cmp dh, 21                       ; don't remove last line
 	je ib                            ; if last line jump
-	cmp dh, 2                       ; don't remove first line
-	je ib                            ; if first line jump
 	inc dx                           ; increase column
 	mov cx, inner_width              ; width of box
 	xor bx, bx                       ; color
@@ -78,18 +78,207 @@ ib: pop cx
 	loop ia
 %endmacro
 
+
+
+
+;Call the menu
+%macro menu 0
+
+;Set the video mode
+	mov ah, 0x00 	
+	mov al, 0x13	
+	int 0x10
+
+;Print the menu on screen	
+	call menu_msg1
+	call menu_msg2
+	call menu_msg3
+	call menu_msg4
+	;call menu_msg5
+	call wait_for_menu
+
+
+
+
+
+
+menu_msg1:
+	mov si, menu1
+	mov bl, 15  ;white color 
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 2	
+	mov dl, 17	
+	jmp msg_menu1
+
+msgret1:
+	ret
+;Call the level 1 msg from the menu	
+menu_msg2:
+	mov si, menu2
+	mov bl, 15   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 6	
+	mov dl, 11	
+	jmp msg_menu2
+msgret2:
+	ret
+;Call the level 2 msg from the menu	
+menu_msg3:
+	mov si, menu3
+	mov bl, 15  ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 8	
+	mov dl, 11	
+	jmp msg_menu3
+msgret3:
+	ret
+;Call the level 3 msg from the menu		
+menu_msg4:
+	mov si, menu4
+	mov bl, 15   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 10	
+	mov dl, 11	
+	jmp msg_menu4
+msgret4:
+	ret
+;Call the exit msg from the menu	
+menu_msg5:
+	mov si, menu5
+	mov bl, 15   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 14	
+	mov dl, 11	
+	jmp msg_menu5
+msgret5:
+	ret
+
+	
+msg_menu1:
+	mov ah, 0x2	
+	int 10h
+	lodsb	
+	or al, al	
+	jz msgret1
+	mov ah, 0xa
+	int 10h		
+	inc dl		
+	jmp msg_menu1
+
+
+	
+;Prints the level 1 msg
+msg_menu2:
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz msgret2
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_menu2	
+;Prints the level 2 msg
+msg_menu3:
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz msgret1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_menu3	
+;Prints the level 3 msg
+msg_menu4:
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz msgret4
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_menu4	
+;Prints the exit  msg
+msg_menu5:
+	mov ah, 0x2	
+	int 10h
+	lodsb	
+	or al, al
+	jz msgret5
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_menu5	
+
+;Call the level 1 msg from the menu	
+
+
+
+
+
+
+wait_for_menu:
+	mov	ah, 0x00
+	int	0x16
+	cmp	al, '1'
+	je	start_tetris1
+	cmp al, '2'
+	je  start_tetris2
+	cmp al,  '3'
+	je start_tetris3
+	;cmp al,  'e'
+	;je  start_tetris2
+	
+	jmp	wait_for_menu
+	
+
+	
+	
+	
+	
+	
+	
+	;jmp wait_for_menu
+
+	;jmp	wait_for_menu
+%endmacro
+	
+
+	
+
+	
 ; ==============================================================================
 
-delay:      equ 0x7f00
-seed_value: equ 0x7f02
 speed:      equ 0x7f03
+menu
+
+start_tetris1:
+	mov word [speed], 4000
+	je	start_tetris
+start_tetris2:
+	mov word [speed], 2000
+	je	start_tetris
+start_tetris3:
+	mov word [speed], 500
+	je	start_tetris
+
+
 
 section .text
 
 start_tetris:
+	delay:      equ 0x7f00
+	seed_value: equ 0x7f02
 	mov ax, cs
 	mov ds, ax   	; Copy CS to DS (we can't do it directly so we use AX temporarily)
-	mov word [speed], 4000
+	
 clear:
 	init_screen
 new_brick:
@@ -124,12 +313,14 @@ wait_a:
 	je right_arrow
 
 	; Level selection
-	cmp	cl, '1'
-	je	level_one
-	cmp cl, '2'
-	je  level_two
-	cmp cl,  '3'
-	je  level_three
+	;cmp	cl, '1'
+	;je	level_one
+	;cmp cl, '2'
+	;je  level_two
+	;cmp cl,  '3'
+	;je  level_three
+	;cmp cl,  'e'
+	;je  halt
 
 	mov byte [delay], 10         ; every other key is fast down
 	jmp clear_keys
@@ -310,6 +501,31 @@ is_zero:
 	popa
 	ret
 
+
+
+
+
+
+;------------------------------In game data-----------------------------	
+section .data
+	;v_msg	db 'WINNER (press b)', 0
+	;go_msg	db 'GAME OVER (press b)', 0
+	menu1	dw 'TETRIS', 0
+	menu2	dw 'LEVEL 1  (press 1)', 0
+	menu3	dw 'LEVEL 2  (press 2)', 0
+	menu4	dw 'LEVEL 3  (press 3)', 0
+	menu5	dw 'EXIT     (press e)', 0
+	;lvl1	dw 'Level1     Points:', 0
+	;lvl2	dw 'Level2     Points:', 0
+	;lvl3	dw 'Level3     Points:', 0
+
+;-----------------------------------------------------------------------
+
+; ==============================================================================
+;Shutdown
+halt:
+	hlt
+	ret
 ; ==============================================================================
 
 bricks:
