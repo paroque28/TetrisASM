@@ -53,10 +53,11 @@ mov ds, ax   	;
 %endmacro
 
 field_left_col:  equ 13
-field_width:     equ 14
-inner_width:     equ 12
+field_width:     equ 12
+inner_width:     equ 10
 inner_first_col: equ 14
 start_row_col:   equ 0x0412
+
 
 %macro init_screen 0
 	clear_screen
@@ -74,6 +75,7 @@ ia: push cx
 	mov cx, inner_width              ; width of box
 	xor bx, bx                       ; color
 	call set_and_write
+	
 ib: pop cx
 	loop ia
 %endmacro
@@ -104,7 +106,7 @@ ib: pop cx
 
 menu_msg1:
 	mov si, menu1
-	mov bl, 15  ;white color 
+	mov bl, 10  ;white color 
 	mov bh, 0   
 	mov cx, 1	
 	mov dh, 2	
@@ -116,7 +118,7 @@ msgret1:
 ;Call the level 1 msg from the menu	
 menu_msg2:
 	mov si, menu2
-	mov bl, 15   ;White color
+	mov bl, 5   ;White color
 	mov bh, 0   
 	mov cx, 1	
 	mov dh, 6	
@@ -127,7 +129,7 @@ msgret2:
 ;Call the level 2 msg from the menu	
 menu_msg3:
 	mov si, menu3
-	mov bl, 15  ;White color
+	mov bl, 1  ;White color
 	mov bh, 0   
 	mov cx, 1	
 	mov dh, 8	
@@ -138,7 +140,7 @@ msgret3:
 ;Call the level 3 msg from the menu		
 menu_msg4:
 	mov si, menu4
-	mov bl, 15   ;White color
+	mov bl, 3   ;White color
 	mov bh, 0   
 	mov cx, 1	
 	mov dh, 10	
@@ -261,12 +263,14 @@ menu
 
 start_tetris1:
 	mov word [speed], 4000
-	je	start_tetris
+	call start_tetris
 start_tetris2:
 	mov word [speed], 2000
+	;call draw_msg_level
 	je	start_tetris
 start_tetris3:
 	mov word [speed], 500
+	;call draw_msg_level
 	je	start_tetris
 
 
@@ -281,6 +285,8 @@ start_tetris:
 	
 clear:
 	init_screen
+	call msglvl1
+
 new_brick:
 	mov byte [delay], 100            ; 3 * 100 = 300ms
 	select_brick                     ; returns the selected brick in AL
@@ -293,10 +299,11 @@ lp:
 wait_or_keyboard:
 	xor cx, cx
 	mov cl, byte [delay]
+	
 wait_a:
 	push cx
 	sleep 3000                       ; wait  speed ms
-
+	
 	push ax
 	mov ah, 1                    ; check for keystroke; AX modified
 	int 0x16                     ; http://www.ctyme.com/intr/rb-1755.htm
@@ -312,6 +319,7 @@ wait_a:
 	cmp ch, 0x4d
 	je right_arrow
 
+	
 	; Level selection
 	;cmp	cl, '1'
 	;je	level_one
@@ -501,6 +509,72 @@ is_zero:
 	popa
 	ret
 
+;Call the level1 msg from the game		
+msglvl1:
+	mov si, lvl1
+	mov bl, 15   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 0	
+	mov dl, 10	
+	jmp msg_lvl1
+retlvl1:
+	ret
+;Call the level 2 msg from the menu	
+msglvl2:
+	mov si, lvl2
+	mov bl, 15   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 0	
+	mov dl, 10	
+	jmp msg_lvl2
+retlvl2:
+	ret
+;Call the level 3 msg from the menu	
+msglvl3:
+	mov si, lvl3
+	mov bl, 15   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 0	
+	mov dl, 10	
+	jmp msg_lvl3
+retlvl3:
+	ret
+	;Prints the level 1 indicator msg
+msg_lvl1:
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_lvl1	
+;Prints the level 2 msg
+msg_lvl2:
+	mov ah, 0x2	
+	int 10h
+	lodsb	
+	or al, al	
+	jz retlvl2
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_lvl2	
+;Prints the level 3 msg
+msg_lvl3:
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl3
+	mov ah, 0xa
+	int 10h		
+	inc dl		
+	jmp msg_lvl3	
 
 
 
@@ -515,9 +589,9 @@ section .data
 	menu3	dw 'LEVEL 2  (press 2)', 0
 	menu4	dw 'LEVEL 3  (press 3)', 0
 	menu5	dw 'EXIT     (press e)', 0
-	;lvl1	dw 'Level1     Points:', 0
-	;lvl2	dw 'Level2     Points:', 0
-	;lvl3	dw 'Level3     Points:', 0
+	lvl1	dw 'Level1     Points:', 0
+	lvl2	dw 'Level2     Points:', 0
+	lvl3	dw 'Level3     Points:', 0
 
 ;-----------------------------------------------------------------------
 
@@ -527,6 +601,15 @@ halt:
 	hlt
 	ret
 ; ==============================================================================
+;Select the level indicator msg
+;draw_msg_level:
+;	cmp byte [level], 0x01
+;	je msglvl1
+;	cmp byte [level], 0x02
+;	je msglvl2
+;	cmp byte [level], 0x03
+;	je msglvl3
+;	ret
 
 bricks:
 	;  in AL      in AH
@@ -546,3 +629,5 @@ bricks:
 	db 00000000b, 01101100b, 01000000b, 10001100b ;
 	db 00000000b, 01101100b, 01000000b, 10001100b ;
 
+section .bss
+	level resb 1
