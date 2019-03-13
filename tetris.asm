@@ -32,14 +32,14 @@ mov ds, ax   	;
 	int 0x1a
 	mov al, byte [seed_value]
 	xor ax, dx
-	mov bl, 31
+	mov bl, 31;1;31
 	mul bx
 	inc ax
-	mov byte [seed_value], al
+	mov 	byte [seed_value], al
 	xor dx, dx
-	mov bx, 7
+	mov bx, 7;1;7
 	div bx
-	shl dl, 3
+	shl dl, 3;1;3
 	xchg ax, dx                  ; mov al, dl
 %endmacro
 
@@ -253,23 +253,24 @@ wait_for_menu:
 ; ==============================================================================
 
 speed:      equ 0x7f03
+mov word [cte], 0x1
 
 menu
 
 start_tetris1:
 	mov word [speed], 4000
 	mov byte [level], 0x01
-	mov word [points], 0x00
+	mov word [points], 0
 	je	start_tetris
 start_tetris2:
 	mov word [speed], 2000
 	mov byte [level], 0x02
-	mov word [points], 0x10
+	mov word [points], 0
 	je	start_tetris
 start_tetris3:
 	mov word [speed], 500
 	mov byte [level], 0x03
-	mov word [points], 0x20
+	mov word [points], 0
 	je	start_tetris
 
 
@@ -404,9 +405,6 @@ set_and_read:
 	pusha                           ; replace current row with row above
  	mov dl, inner_first_col
  	mov cx, inner_width
-	;add word [points], 0x10
-	;call draw_msg_level
-	;call score
 cf_aa:
 	push cx
 	dec dh                          ; decrement row
@@ -445,7 +443,7 @@ replace_next_row:                    ; replace current row with rows above
 	dec dh                           ; replace row above ... and so on
 	jnz replace_next_row
 	call check_filled                ; check for other full rows
-	add word [points], 0x001
+	add word [points], 1
 	call update_score   
 cf_done:
 	popa  
@@ -516,79 +514,68 @@ is_zero:
 	popa
 	ret
 update_score:
-	cmp byte [points], 0x0
-	je points0
-	cmp byte [points], 0x1
+	cmp byte [points], 1
+	je points1
+	cmp byte [points], 2
+	je points2
+	cmp byte [points], 3
+	je points3
+	cmp byte [points], 4
+	je points4
+	cmp byte [points], 5
+	je points5
+	cmp byte [points], 6
+	je points6
+	cmp byte [points], 7
+	je points7
+	cmp byte [points], 8
+	je points8
+	cmp byte [points], 9
+	je points9
+	cmp byte [points], 10
 	je points10
-	cmp byte [points], 0x2
+	cmp byte [points], 11
+	je points11
+	cmp byte [points], 12
+	je points12
+	cmp byte [points], 13
+	je points13
+	cmp byte [points], 14
+	je points14
+	cmp byte [points], 15
+	je points15
+	cmp byte [points], 16
+	je points16
+	cmp byte [points], 17
+	je points17
+	cmp byte [points], 18
+	je points18
+	cmp byte [points], 19
+	je points19
+	cmp byte [points], 20
 	je points20
-	cmp byte [points], 0x03
-	je points30
-	cmp byte [points], 0x04
-	je points40
-	cmp byte [points], 0x05
-	je points50
-	cmp byte [points], 0x06
-	je points60
-	cmp byte [points], 0x07
-	je points70
-	cmp byte [points], 0x08
-	je points80
-	cmp byte [points], 0x09
-	je points90
-	cmp byte [points], 0x10
-	je points100
-	cmp byte [points], 0x11
-	je points110
-	cmp byte [points], 0x12
-	je points120
-	cmp byte [points], 0x13
-	je points130
-	;cmp byte [points], 0x140
-	;je points140
-	;cmp byte [points], 0x150
-	;je points150
-	;cmp byte [points], 0x160
-	;je points160
-	;cmp byte [points], 0x170
-	;je points170
-	;cmp byte [points], 0x180
-	;je points180
-	;cmp byte [points], 0x190
-	;je points190
-	;cmp byte [points], 0x200
-	;je points200
 	
-	cmp byte [points], 0x21
-	je points210
-	cmp byte [points], 0x22
-	je points220
-	;cmp byte [points], 0x230
-	;je points230
-	;cmp byte [points], 0x240
-	;je points240
-	;cmp byte [points], 0x250
-	;je points250
-	;cmp byte [points], 0x260
-	;je points260
-	;cmp byte [points], 0x270
-	;je points270
-	;cmp byte [points], 0x280
-	;je points280
-	;cmp byte [points], 0x290
-	;je points290
+	cmp byte [points], 21
+	je points21
+	cmp byte [points], 22
+	je points22
+	cmp byte [points], 23
+	je points23
+	cmp byte [points], 24
+	je points24
+	cmp byte [points], 25
+	je points25
+	cmp byte [points], 26
+	je points26
+	cmp byte [points], 27
+	je points27
+	cmp byte [points], 28
+	je points28
+	cmp byte [points], 29
+	je points29
 	
 	
-;Call the level1 msg from the game		
-msglvl1:
-	cmp byte [points], 0x00
-	je points0
-	mov bl, 15   ;White color
-	mov bh, 0   
-	mov cx, 1	
-	mov dh, 0	
-	mov dl, 10	
-	jmp msg_lvl1	
+
 
 another_part:
 	mov bl, 15   ;White color
@@ -601,63 +588,118 @@ another_part:
 
 retlvl1:
 	ret
-points0:
-	mov si, lvl1
-	jmp another_part 
-points10:
+
+points1:
 	mov si, lvl11
 	jmp another_part 
-points20:
+points2:
 	mov si, lvl12
 	jmp another_part 
-points30:
+points3:
 	mov si, lvl13
 	jmp another_part 
-points40:
+points4:
 	mov si, lvl14
 	jmp another_part 
-points50:
+points5:
 	mov si, lvl15
 	jmp another_part 
-points60:
+points6:
 	mov si, lvl16
 	jmp another_part 
-points70:
+points7:
 	mov si, lvl17
 	jmp another_part 
-points80:
+points8:
 	mov si, lvl18
 	jmp another_part 
-points90:
+points9:
 	mov si, lvl19
 	jmp another_part 
-points100:
-	mov word [points], 0x10
-	mov si, lvl2
+points10:
+	mov word [speed], 2000
+	mov word [points], 10
+	mov si, lvl21
+	mov byte [level], 0x02
 	jmp another_part
-points110:
+points11:
 	mov si, lvl21
 	jmp another_part
-points120:
+points12:
 	mov si, lvl22
 	jmp another_part 
-points130:
+points13:
 	mov si, lvl23
 	jmp another_part 
-
-
-points200:
-	mov si, lvl3
-	mov word [points], 0x20
+points14:
+	mov si, lvl24
 	jmp another_part
-points210:
+points15:
+	mov si, lvl25
+	jmp another_part 
+points16:
+	mov si, lvl26
+	jmp another_part 
+points17:
+	mov si, lvl27
+	jmp another_part
+points18:
+	mov si, lvl28
+	jmp another_part 
+points19:
+	mov si, lvl29
+	jmp another_part 
+
+
+
+points20:
+	mov si, lvl3
+	mov word [points], 20
+	mov byte [level], 0x03
+	mov word [speed], 500
+	jmp another_part
+points21:
 	mov si, lvl31
 	jmp another_part 
-points220:
+points22:
 	mov si, lvl32
 	jmp another_part 
+points23:
+	mov si, lvl33
+	jmp another_part
+points24:
+	mov si, lvl34
+	jmp another_part 
+points25:
+	mov si, lvl35
+	jmp another_part
+points26:
+	mov si, lvl36
+	jmp another_part
+points27:
+	mov si, lvl37
+	jmp another_part 
+points28:
+	mov si, lvl38
+	jmp another_part 
+points29:
+	mov si, lvl39
+	jmp another_part 
+
+
+;Call the level1 msg from the game		
+msglvl1:
+	mov si, lvl1
+	mov bl, 15   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 0	
+	mov dl, 10	
+	jmp msg_lvl2
 ;Call the level 2 msg from the menu	
 msglvl2:
+	;cmp byte [points], 0x10
+    ;je points10
 	mov si, lvl2
 	mov bl, 15   ;White color
 	mov bh, 0   
@@ -669,6 +711,8 @@ retlvl2:
 	ret
 ;Call the level 3 msg from the menu	
 msglvl3:
+	;cmp byte [points], 0x20
+    ;je points20
 	mov si, lvl3
 	mov bl, 15   ;White color
 	mov bh, 0   
@@ -757,8 +801,10 @@ section .data
 	lvl37	dw 'Level3     Points: 270', 0
 	lvl38	dw 'Level3     Points: 280', 0
 	lvl39	dw 'Level3     Points: 290', 0
-	points 		resq 1
-	mov word [points], 0
+	points 		resw 1
+	cte		resw 1
+	
+	;mov word [points], 0x00
 
 ;-----------------------------------------------------------------------
 
