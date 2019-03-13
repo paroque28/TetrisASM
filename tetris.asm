@@ -259,6 +259,7 @@ wait_for_menu:
 ; ==============================================================================
 
 speed:      equ 0x7f03
+mov word [points], 0
 menu
 
 start_tetris1:
@@ -323,7 +324,7 @@ wait_a:
 	
 	; Level selection
 	;cmp	cl, '1'
-	;je	level_one
+	;je	score
 	;cmp cl, '2'
 	;je  level_two
 	;cmp cl,  '3'
@@ -406,6 +407,7 @@ set_and_read:
 	pusha                           ; replace current row with row above
  	mov dl, inner_first_col
  	mov cx, inner_width
+	;call score
 cf_aa:
 	push cx
 	dec dh                          ; decrement row
@@ -448,6 +450,11 @@ cf_done:
 	popa
 	ret
 
+score:
+	add word [points], 1
+	mov word ax, [points]
+	call print_int
+	ret
 clear_brick:
 	xor bx, bx
 	jmp print_brick_no_color
@@ -593,6 +600,8 @@ section .data
 	lvl1	dw 'Level1     Points:', 0
 	lvl2	dw 'Level2     Points:', 0
 	lvl3	dw 'Level3     Points:', 0
+	points 		resw 1
+	mov word [points], 0
 
 ;-----------------------------------------------------------------------
 
@@ -624,6 +633,42 @@ level2:
 level3:
 	mov byte [level], 0x03
 	jmp	start_tetris
+
+
+
+;Display the score
+print_int: 
+	push bp 
+	mov bp, sp
+	 
+
+;Auxiliar, prepare the int to display
+push_digits:
+	xor dx, dx
+	mov bx, 10 
+	div bx 
+	push dx 
+	test ax, ax 
+	jnz push_digits
+
+;Print char by char
+pop_and_print_digits:
+	pop ax 
+	add al, '0' 
+	call print_char 
+	cmp sp, bp 
+	jne pop_and_print_digits 
+	pop bp 
+	ret
+
+;Print a char 
+print_char:
+	mov ah, 0x0E 
+	mov bh, 0x00 
+	mov bl, 0x07 
+	int 0x10
+	ret
+
 
 bricks:
 	;  in AL      in AH
