@@ -1,4 +1,4 @@
-all: tetris.img tetrisfat.img
+all: tetrisfat.img
 
 run: clean all
 	qemu-system-i386 -drive file=tetrisfat.img,index=0,media=disk,format=raw
@@ -16,6 +16,7 @@ tetrisfat.img: clean boot.bin tetris.bin
 
 .PHONY : clean
 clean:
+		touch test.img test.bin
 		rm *.bin *.img
 
 

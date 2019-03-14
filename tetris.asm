@@ -258,17 +258,17 @@ mov word [cte], 0x1
 menu
 
 start_tetris1:
-	mov word [speed], 4000
+	mov word [speed], 6000
 	mov byte [level], 0x01
 	mov word [points], 0
 	je	start_tetris
 start_tetris2:
-	mov word [speed], 2000
+	mov word [speed], 3000
 	mov byte [level], 0x02
 	mov word [points], 0
 	je	start_tetris
 start_tetris3:
-	mov word [speed], 500
+	mov word [speed], 1000
 	mov byte [level], 0x03
 	mov word [points], 0
 	je	start_tetris
@@ -314,8 +314,10 @@ wait_a:
                                  ; 4b left, 48 up, 4d right, 50 down
 	cmp ch, 0x4b                 ; left arrow
 	je left_arrow                ; http://stackoverflow.com/questions/16939449/how-to-detect-arrow-keys-in-assembly
-	cmp ch, 0x48                 ; up arrow
-	je up_arrow
+	cmp cl, 'q'                ; q_key
+	je rotate_left
+	cmp cl, 'e'                ; e_key
+	je rotate_right
 	cmp ch, 0x4d
 	je right_arrow
 
@@ -344,13 +346,34 @@ right_arrow:
 	je clear_keys                ; no collision
 	dec dx
 	jmp clear_keys
-up_arrow:
+rotate_left:
 	mov bl, al
 	inc ax
 	inc ax
 	test al, 00000111b           ; check for overflow
 	jnz nf                       ; no overflow
 	sub al, 8
+	jmp clear_keys
+rotate_right:
+	mov bl, al
+	inc ax
+	inc ax
+	test al, 00000111b           ; check for overflow
+	jnz nf                       ; no overflow
+	sub al, 8
+	mov bl, al
+	inc ax
+	inc ax
+	test al, 00000111b           ; check for overflow
+	jnz nf                       ; no overflow
+	sub al, 8
+	mov bl, al
+	inc ax
+	inc ax
+	test al, 00000111b           ; check for overflow
+	jnz nf                       ; no overflow
+	sub al, 8
+	jmp clear_keys
 level_one:
 	mov word [speed], 4000
 	jmp clear_keys
