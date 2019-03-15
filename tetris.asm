@@ -124,6 +124,12 @@ start_tetris:
 clear:
 	init_screen
 	call draw_msg_level
+	call hotkeys
+	call hotkeys2
+	call hotkeys3
+	call hotkeys4
+	call hotkeys5
+	call hotkeys6
 
 new_brick:
 	;ret
@@ -874,6 +880,12 @@ section .data
 	v_msg	db 'WINNER: b to restart or m to menu', 0
 	go_msg	db 'GAME OVER: b to restart or m to menu', 0
 	go_menu	db 'Or (press m) to go to the menu', 0
+	hotkey1	dw 'M to menu', 0
+	hotkey2	dw 'Q:Rotate left', 0
+	hotkey3	dw 'W:Rotate right', 0
+	hotkey4	dw 'left:<-', 0
+	hotkey5	dw 'Right ->', 0
+	hotkey6	dw 'Down:Down arrow', 0
 	menu1	dw 'TETRIS', 0
 	menu2	dw 'LEVEL 1  (press 1)', 0
 	menu3	dw 'LEVEL 2  (press 2)', 0
@@ -982,6 +994,124 @@ print_char:
 	mov bl, 0x07 
 	int 0x10
 	ret
+hotkeys:
+	mov si, hotkey1
+	mov bl, 2   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 4	
+	mov dl, 26
+	
+msg_hotkey:
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_hotkey
+
+hotkeys2:
+	mov si, hotkey2
+	mov bl, 2   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 6	
+	mov dl, 26
+	
+msg_hotkey2:
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_hotkey2
+
+hotkeys3:
+	mov si, hotkey3
+	mov bl, 2   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 8	
+	mov dl, 26
+	
+msg_hotkey3:
+
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_hotkey3
+
+hotkeys4:
+	mov si, hotkey4
+	mov bl, 2   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 10	
+	mov dl, 26
+	
+msg_hotkey4:
+
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_hotkey4
+
+hotkeys5:
+	mov si, hotkey5
+	mov bl, 2   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 12	
+	mov dl, 26
+	
+msg_hotkey5:
+
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_hotkey5
+
+hotkeys6:
+	mov si, hotkey6
+	mov bl, 2   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 14	
+	mov dl, 25
+
+msg_hotkey6:
+
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_hotkey6
+
 
 
 bricks:
