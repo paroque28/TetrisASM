@@ -667,7 +667,7 @@ menu:
 	call menu_msg2
 	call menu_msg3
 	call menu_msg4
-	call menu_msg5
+	;call menu_msg5
 	call wait_for_menu
 
 
@@ -819,8 +819,8 @@ wait_for_menu:
 	je  start_tetris2
 	cmp al,  '3'
 	je start_tetris3
-	cmp al,  'e'
-	je  defeat
+	;cmp al,  'e'
+	;je  defeat
 	
 	
 	jmp	wait_for_menu
