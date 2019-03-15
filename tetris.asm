@@ -67,7 +67,7 @@ ia: push cx
 	inc dh                           ; increment row
 	mov dl, field_left_col           ; set column
 	mov cx, field_width              ; width of box
-	mov bx, 0xEF                     ; color
+	mov bx, 0x8F                 ; color
 	call set_and_write
 	cmp dh, 21                       ; don't remove last line
 	je ib                            ; if last line jump
@@ -130,6 +130,7 @@ clear:
 	call hotkeys4
 	call hotkeys5
 	call hotkeys6
+	call hotkeys7
 
 new_brick:
 	;ret
@@ -187,8 +188,8 @@ wait_a:
 	;je	score
 	;cmp cl, '2'
 	;je  level_two
-	;cmp cl,  'h'
-	;je  new_brick
+	cmp cl,  'r'
+	je  restart_game
 	cmp cl,  'm'
 	je  menu
 
@@ -854,6 +855,13 @@ wait_for_loose:
 	je	menu;menu
 	jmp	wait_for_loose
 
+
+restart_game:
+	mov	ah, 0x00
+	int	0x16
+	jmp	clear
+
+
 ;================================================
 
 ;Call the defeat msg
@@ -864,6 +872,7 @@ defeat:
 	mov si, go_msg
 	mov bl, 4   	;Red color
 	jmp print_msg
+
 
 win:
 mov ah, 0x00 	
@@ -886,6 +895,7 @@ section .data
 	hotkey4	dw 'left:<-', 0
 	hotkey5	dw 'Right ->', 0
 	hotkey6	dw 'Down:Down arrow', 0
+	hotkey7	dw 'R: Restart', 0
 	menu1	dw 'TETRIS', 0
 	menu2	dw 'LEVEL 1  (press 1)', 0
 	menu3	dw 'LEVEL 2  (press 2)', 0
@@ -1081,6 +1091,26 @@ msg_hotkey6:
 	int 10h		
 	inc dl		
 	jmp msg_hotkey6
+
+hotkeys7:
+	mov si, hotkey7
+	mov bl, 2   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 16	
+	mov dl, 26
+
+msg_hotkey7:
+
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_hotkey7
 
 
 
