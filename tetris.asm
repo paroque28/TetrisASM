@@ -291,10 +291,11 @@ new_brick:
 	mov byte [delay], 100            ; 3 * 100 = 300ms
 
 	select_brick                     ; returns the selected brick in AL
+
 	;Print Next Brick
-	mov dx, 0x0404           ; start at row 4 and col 38
+	mov dx, 0x0404           ; start at row 4 and col 4
 	xor bx, bx
-	call print_brick_no_color
+	call print_next_brick_no_color
 	call print_next_brick
 
 	; Save next brick
