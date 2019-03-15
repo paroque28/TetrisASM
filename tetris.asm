@@ -67,7 +67,7 @@ ia: push cx
 	inc dh                           ; increment row
 	mov dl, field_left_col           ; set column
 	mov cx, field_width              ; width of box
-	mov bx, 0xFF                     ; color
+	mov bx, 0xEF                     ; color
 	call set_and_write
 	cmp dh, 21                       ; don't remove last line
 	je ib                            ; if last line jump
@@ -963,37 +963,7 @@ level3:
 
 
 ;Display the score
-print_int: 
-	push bp 
-	mov bp, sp
-	 
 
-;Auxiliar, prepare the int to display
-push_digits:
-	xor dx, dx
-	mov bx, 10 
-	div bx 
-	push dx 
-	test ax, ax 
-	jnz push_digits
-
-;Print char by char
-pop_and_print_digits:
-	pop ax 
-	add al, '0' 
-	call print_char 
-	cmp sp, bp 
-	jne pop_and_print_digits 
-	pop bp 
-	ret
-
-;Print a char 
-print_char:
-	mov ah, 0x0E 
-	mov bh, 0x00 
-	mov bl, 0x07 
-	int 0x10
-	ret
 hotkeys:
 	mov si, hotkey1
 	mov bl, 2   ;White color
