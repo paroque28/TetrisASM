@@ -289,13 +289,18 @@ clear:
 
 new_brick:
 	mov byte [delay], 100            ; 3 * 100 = 300ms
-	select_brick                     ; returns the selected brick in AL
 
+	select_brick                     ; returns the selected brick in AL
 	;Print Next Brick
 	mov dx, 0x0404           ; start at row 4 and col 38
 	xor bx, bx
 	call print_brick_no_color
 	call print_next_brick
+
+	; Save next brick
+	mov bl, al
+	mov al, byte [next_brick]
+	mov byte [next_brick], bl
 
 	;current brick
 	mov dx, start_row_col            ; start at row 4 and col 38
@@ -847,8 +852,10 @@ section .data
 	lvl39	dw 'Level3     Points: 290', 0
 	points 		resw 1
 	cte		resw 1
+	next_brick 		resw 1
 	
 	;mov word [points], 0x00
+	;mov byte [nextBrick], 0x00
 
 ;-----------------------------------------------------------------------
 
@@ -922,7 +929,7 @@ bricks:
 	;  in AL      in AH
 	;  3rd + 4th  1st + 2nd row
 	db 01000100b, 01000100b, 00000000b, 11110000b ; I
-	db 01000100b, 01000100b, 00000000b, 11110000b ; I
+	db 01000100b, 01000100b, 00000000b, 11110000b ; I rotate
 	db 01100000b, 00100010b, 00000000b, 11100010b ; left L
 	db 01000000b, 01100100b, 00000000b, 10001110b ; left L rotate
 	db 01100000b, 01000100b, 00000000b, 00101110b ;
