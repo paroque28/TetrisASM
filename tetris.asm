@@ -67,7 +67,7 @@ ia: push cx
 	inc dh                           ; increment row
 	mov dl, field_left_col           ; set column
 	mov cx, field_width              ; width of box
-	mov bx, 0xFF                     ; color
+	mov bx, 0x8F                 ; color
 	call set_and_write
 	cmp dh, 21                       ; don't remove last line
 	je ib                            ; if last line jump
@@ -83,168 +83,6 @@ ib: pop cx
 
 
 
-;Call the menu
-%macro menu 0
-
-;Set the video mode
-	mov ah, 0x00 	
-	mov al, 0x13	
-	int 0x10
-
-;Print the menu on screen	
-	call menu_msg1
-	call menu_msg2
-	call menu_msg3
-	call menu_msg4
-	;call menu_msg5
-	call wait_for_menu
-
-
-
-
-
-
-menu_msg1:
-	mov si, menu1
-	mov bl, 10  ;white color 
-	mov bh, 0   
-	mov cx, 1	
-	mov dh, 2	
-	mov dl, 17	
-	jmp msg_menu1
-
-msgret1:
-	ret
-;Call the level 1 msg from the menu	
-menu_msg2:
-	mov si, menu2
-	mov bl, 5   ;White color
-	mov bh, 0   
-	mov cx, 1	
-	mov dh, 6	
-	mov dl, 11	
-	jmp msg_menu2
-msgret2:
-	ret
-;Call the level 2 msg from the menu	
-menu_msg3:
-	mov si, menu3
-	mov bl, 1  ;White color
-	mov bh, 0   
-	mov cx, 1	
-	mov dh, 8	
-	mov dl, 11	
-	jmp msg_menu3
-msgret3:
-	ret
-;Call the level 3 msg from the menu		
-menu_msg4:
-	mov si, menu4
-	mov bl, 3   ;White color
-	mov bh, 0   
-	mov cx, 1	
-	mov dh, 10	
-	mov dl, 11	
-	jmp msg_menu4
-msgret4:
-	ret
-;Call the exit msg from the menu	
-menu_msg5:
-	mov si, menu5
-	mov bl, 15   ;White color
-	mov bh, 0   
-	mov cx, 1	
-	mov dh, 14	
-	mov dl, 11	
-	jmp msg_menu5
-msgret5:
-	ret
-
-	
-msg_menu1:
-	mov ah, 0x2	
-	int 10h
-	lodsb	
-	or al, al	
-	jz msgret1
-	mov ah, 0xa
-	int 10h		
-	inc dl		
-	jmp msg_menu1
-
-
-	
-;Prints the level 1 msg
-msg_menu2:
-	mov ah, 0x2	
-	int 10h
-	lodsb		
-	or al, al	
-	jz msgret2
-	mov ah, 0xa	
-	int 10h		
-	inc dl		
-	jmp msg_menu2	
-;Prints the level 2 msg
-msg_menu3:
-	mov ah, 0x2	
-	int 10h
-	lodsb		
-	or al, al	
-	jz msgret1
-	mov ah, 0xa	
-	int 10h		
-	inc dl		
-	jmp msg_menu3	
-;Prints the level 3 msg
-msg_menu4:
-	mov ah, 0x2	
-	int 10h
-	lodsb		
-	or al, al	
-	jz msgret4
-	mov ah, 0xa	
-	int 10h		
-	inc dl		
-	jmp msg_menu4	
-;Prints the exit  msg
-msg_menu5:
-	mov ah, 0x2	
-	int 10h
-	lodsb	
-	or al, al
-	jz msgret5
-	mov ah, 0xa	
-	int 10h		
-	inc dl		
-	jmp msg_menu5	
-
-;Call the level 1 msg from the menu	
-wait_for_menu:
-	mov	ah, 0x00
-	int	0x16
-	cmp	al, '1'
-	je	start_tetris1
-	cmp al, '2'
-	je  start_tetris2
-	cmp al,  '3'
-	je start_tetris3
-	;cmp al,  'e'
-	;je  start_tetris2
-	
-	jmp	wait_for_menu
-	
-
-	
-	
-	
-	
-	
-	
-	;jmp wait_for_menu
-
-	;jmp	wait_for_menu
-%endmacro
 	
 
 	
@@ -255,7 +93,7 @@ wait_for_menu:
 speed:      equ 0x7f03
 mov word [cte], 0x1
 
-menu
+jmp menu
 
 start_tetris1:
 	mov word [speed], 6000
@@ -265,12 +103,12 @@ start_tetris1:
 start_tetris2:
 	mov word [speed], 3000
 	mov byte [level], 0x02
-	mov word [points], 0
+	mov word [points], 10
 	je	start_tetris
 start_tetris3:
 	mov word [speed], 1000
 	mov byte [level], 0x03
-	mov word [points], 0
+	mov word [points], 20
 	je	start_tetris
 
 
@@ -286,8 +124,16 @@ start_tetris:
 clear:
 	init_screen
 	call draw_msg_level
+	call hotkeys
+	call hotkeys2
+	call hotkeys3
+	call hotkeys4
+	call hotkeys5
+	call hotkeys6
+	call hotkeys7
 
 new_brick:
+	;ret
 	mov byte [delay], 100            ; 3 * 100 = 300ms
 	;clean next brick
 	mov dx, 0x0404       ;where    ; start at row 4 and col 4
@@ -311,7 +157,7 @@ new_brick:
 	
 lp:
 	call check_collision
-	jne  clear                        ; collision -> game over
+	jne  defeat                        ; collision -> game over
 	call print_brick
 
 wait_or_keyboard:
@@ -334,7 +180,7 @@ wait_a:
 	je left_arrow                ; http://stackoverflow.com/questions/16939449/how-to-detect-arrow-keys-in-assembly
 	cmp cl, 'q'                ; q_key
 	je rotate_left
-	cmp cl, 'w'                ; e_key
+	cmp cl, 'w'                ; w_key
 	je rotate_right
 	cmp ch, 0x4d
 	je right_arrow
@@ -345,10 +191,10 @@ wait_a:
 	;je	score
 	;cmp cl, '2'
 	;je  level_two
-	;cmp cl,  '3'
-	;je  level_three
-	;cmp cl,  'e'
-	;je  halt
+	cmp cl,  'r'
+	je  restart_game
+	cmp cl,  'm'
+	je  menu
 
 	mov byte [delay], 10         ; every other key is fast down
 	jmp clear_keys
@@ -393,13 +239,16 @@ rotate_right:
 	sub al, 8
 	jmp clear_keys
 level_one:
-	mov word [speed], 4000
+	mov word [points], 0
+	mov word [speed], 6000
 	jmp clear_keys
 level_two:
 	mov word [points], 0x10
+	mov word [speed], 3000
 	jmp clear_keys
 level_three:
-	mov word [speed], 500
+	mov word [speed], 1000
+	mov word [points], 0x10
 nf: call check_collision
 	je clear_keys                ; no collision
 	mov al, bl
@@ -484,7 +333,7 @@ replace_next_row:                    ; replace current row with rows above
 	dec dh                           ; replace row above ... and so on
 	jnz replace_next_row
 	call check_filled                ; check for other full rows
-	add word [points], 1
+	add word [points], 5
 	call update_score   
 cf_done:
 	popa  
@@ -626,6 +475,8 @@ update_score:
 	je points28
 	cmp byte [points], 29
 	je points29
+	cmp byte [points], 30
+	je win
 	
 	
 
@@ -670,9 +521,9 @@ points9:
 	mov si, lvl19
 	jmp another_part 
 points10:
-	mov word [speed], 2000
+	mov word [speed], 3000
 	mov word [points], 10
-	mov si, lvl21
+	mov si, lvl2
 	mov byte [level], 0x02
 	jmp another_part
 points11:
@@ -709,7 +560,7 @@ points20:
 	mov si, lvl3
 	mov word [points], 20
 	mov byte [level], 0x03
-	mov word [speed], 500
+	mov word [speed], 1000
 	jmp another_part
 points21:
 	mov si, lvl31
@@ -813,10 +664,262 @@ msg_lvl3:
 
 
 
+;================================================
+
+
+;Call the menu
+menu:
+
+;Set the video mode
+	mov ah, 0x00 	
+	mov al, 0x13	
+	int 0x10
+
+;Print the menu on screen	
+	call menu_msg1
+	call menu_msg2
+	call menu_msg3
+	call menu_msg4
+	;call menu_msg5
+	call wait_for_menu
+
+
+
+
+
+
+menu_msg1:
+	mov si, menu1
+	mov bl, 10  ;white color 
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 2	
+	mov dl, 17	
+	jmp msg_menu1
+
+msgret1:
+	ret
+;Call the level 1 msg from the menu	
+menu_msg2:
+	mov si, menu2
+	mov bl, 5   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 6	
+	mov dl, 11	
+	jmp msg_menu2
+msgret2:
+	ret
+;Call the level 2 msg from the menu	
+menu_msg3:
+	mov si, menu3
+	mov bl, 1  ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 8	
+	mov dl, 11	
+	jmp msg_menu3
+msgret3:
+	ret
+;Call the level 3 msg from the menu		
+menu_msg4:
+	mov si, menu4
+	mov bl, 3   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 10	
+	mov dl, 11	
+	jmp msg_menu4
+msgret4:
+	ret
+;Call the exit msg from the menu	
+menu_msg5:
+	mov si, menu5
+	mov bl, 15   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 14	
+	mov dl, 11	
+	jmp msg_menu5
+msgret5:
+	ret
+
+
+msg_menu1:
+	mov ah, 0x2	
+	int 10h
+	lodsb	
+	or al, al	
+	jz msgret1
+	mov ah, 0xa
+	int 10h		
+	inc dl		
+	jmp msg_menu1
+
+
+
+;call the printing functions for defeat and victory
+print_msg:
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 12;12	
+	mov dl, 2	;10
+;Prints the defeat or victory msg
+msg_loop:
+	mov ah, 0x2
+	int 10h
+	lodsb		
+	or al, al	
+	jz wait_for_loose
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_loop	
+
+	
+;Prints the level 1 msg
+msg_menu2:
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz msgret2
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_menu2	
+;Prints the level 2 msg
+msg_menu3:
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz msgret1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_menu3	
+;Prints the level 3 msg
+msg_menu4:
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz msgret4
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_menu4	
+;Prints the exit  msg
+msg_menu5:
+	mov ah, 0x2	
+	int 10h
+	lodsb	
+	or al, al
+	jz msgret5
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_menu5	
+
+;Call the level 1 msg from the menu	
+wait_for_menu:
+	mov	ah, 0x00
+	int	0x16
+	cmp	al, '1'
+	je	start_tetris1
+	cmp al, '2'
+	je  start_tetris2
+	cmp al,  '3'
+	je start_tetris3
+	;cmp al,  'e'
+	;je  defeat
+	
+	
+	jmp	wait_for_menu
+	
+	
+	
+	
+	
+	
+	
+	
+	;jmp wait_for_menu
+
+	;jmp	wait_for_menu
+
+;===============================================
+
+
+wait_for_loose:
+	mov	ah, 0x00
+	int	0x16
+	cmp	al, 'b'
+	je	restart_game;menu
+	cmp	al, 'm'
+	je	menu;menu
+	jmp	wait_for_loose
+
+
+restart_game:
+	mov	ah, 0x00
+	int	0x16
+	cmp byte [level], 0x01
+	je r1
+	cmp byte [level], 0x02
+	je r2
+	cmp byte [level], 0x03
+	je r3
+	jmp	clear
+r1:
+	mov word [points], 0
+	mov word [speed], 6000
+	je	start_tetris1
+r2:
+	mov word [points], 10
+	mov word [speed], 3000
+	je	start_tetris2
+r3:
+	mov word [speed], 1000
+	mov word [points], 10
+	je	start_tetris3
+
+
+;================================================
+
+;Call the defeat msg
+defeat:
+	mov ah, 0x00 	
+	mov al, 0x13	
+	int 0x10
+	mov si, go_msg
+	mov bl, 4   	;Red color
+	jmp print_msg
+
+
+win:
+mov ah, 0x00 	
+	mov al, 0x13	
+	int 0x10
+	mov si, v_msg
+	mov bl, 4   	;Red color
+	jmp print_msg
+
+
+
 ;------------------------------In game data-----------------------------	
 section .data
-	;v_msg	db 'WINNER (press b)', 0
-	;go_msg	db 'GAME OVER (press b)', 0
+	v_msg	db 'WINNER: b to restart or m to menu', 0
+	go_msg	db 'GAME OVER: b to restart or m to menu', 0
+	go_menu	db 'Or (press m) to go to the menu', 0
+	hotkey1	dw 'M to menu', 0
+	hotkey2	dw 'Q:Rotate left', 0
+	hotkey3	dw 'W:Rotate right', 0
+	hotkey4	dw 'left:<-', 0
+	hotkey5	dw 'Right ->', 0
+	hotkey6	dw 'Down:Down arrow', 0
+	hotkey7	dw 'R: Restart', 0
 	menu1	dw 'TETRIS', 0
 	menu2	dw 'LEVEL 1  (press 1)', 0
 	menu3	dw 'LEVEL 2  (press 2)', 0
@@ -854,9 +957,7 @@ section .data
 	lvl37	dw 'Level3     Points: 270', 0
 	lvl38	dw 'Level3     Points: 280', 0
 	lvl39	dw 'Level3     Points: 290', 0
-	points 		resw 1
-	cte		resw 1
-	next_brick 		resw 1
+
 	
 	;mov word [points], 0x00
 	;mov byte [nextBrick], 0x00
@@ -896,37 +997,145 @@ level3:
 
 
 ;Display the score
-print_int: 
-	push bp 
-	mov bp, sp
-	 
 
-;Auxiliar, prepare the int to display
-push_digits:
-	xor dx, dx
-	mov bx, 10 
-	div bx 
-	push dx 
-	test ax, ax 
-	jnz push_digits
+hotkeys:
+	mov si, hotkey1
+	mov bl, 2   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 4	
+	mov dl, 26
+	
+msg_hotkey:
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_hotkey
 
-;Print char by char
-pop_and_print_digits:
-	pop ax 
-	add al, '0' 
-	call print_char 
-	cmp sp, bp 
-	jne pop_and_print_digits 
-	pop bp 
-	ret
+hotkeys2:
+	mov si, hotkey2
+	mov bl, 2   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 6	
+	mov dl, 26
+	
+msg_hotkey2:
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_hotkey2
 
-;Print a char 
-print_char:
-	mov ah, 0x0E 
-	mov bh, 0x00 
-	mov bl, 0x07 
-	int 0x10
-	ret
+hotkeys3:
+	mov si, hotkey3
+	mov bl, 2   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 8	
+	mov dl, 26
+	
+msg_hotkey3:
+
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_hotkey3
+
+hotkeys4:
+	mov si, hotkey4
+	mov bl, 2   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 10	
+	mov dl, 26
+	
+msg_hotkey4:
+
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_hotkey4
+
+hotkeys5:
+	mov si, hotkey5
+	mov bl, 2   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 12	
+	mov dl, 26
+	
+msg_hotkey5:
+
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_hotkey5
+
+hotkeys6:
+	mov si, hotkey6
+	mov bl, 2   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 14	
+	mov dl, 25
+
+msg_hotkey6:
+
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_hotkey6
+
+hotkeys7:
+	mov si, hotkey7
+	mov bl, 2   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 16	
+	mov dl, 26
+
+msg_hotkey7:
+
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz retlvl1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_hotkey7
+
 
 
 bricks:
@@ -949,3 +1158,6 @@ bricks:
 
 section .bss
 	level resb 1
+	points 		resw 1
+	cte		resw 1
+	next_brick 		resw 1
