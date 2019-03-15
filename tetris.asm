@@ -290,7 +290,16 @@ clear:
 new_brick:
 	mov byte [delay], 100            ; 3 * 100 = 300ms
 	select_brick                     ; returns the selected brick in AL
+
+	;Print Next Brick
+	mov dx, 0x0404           ; start at row 4 and col 38
+	xor bx, bx
+	call print_brick_no_color
+	call print_next_brick
+
+	;current brick
 	mov dx, start_row_col            ; start at row 4 and col 38
+	
 lp:
 	call check_collision
 	jne  clear                        ; collision -> game over
@@ -316,7 +325,7 @@ wait_a:
 	je left_arrow                ; http://stackoverflow.com/questions/16939449/how-to-detect-arrow-keys-in-assembly
 	cmp cl, 'q'                ; q_key
 	je rotate_left
-	cmp cl, 'e'                ; e_key
+	cmp cl, 'w'                ; e_key
 	je rotate_right
 	cmp ch, 0x4d
 	je right_arrow
@@ -473,7 +482,19 @@ cf_done:
 	ret
 
 
-
+print_next_brick:  ; al = 0AAAARR0
+	mov bl, al                   ; select the right color
+	shr bl, 3
+	inc bx
+	shl bl, 4
+print_next_brick_no_color:
+	inc bx                       ; set least significant bit
+	mov di, bx
+	jmp check_collision_main
+	; BL = color of brick
+	; DX = position (DH = row), AL = brick offset
+	; return: flag
+	ret
 
 clear_brick:
 	xor bx, bx
