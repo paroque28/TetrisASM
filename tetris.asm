@@ -236,13 +236,16 @@ rotate_right:
 	sub al, 8
 	jmp clear_keys
 level_one:
-	mov word [speed], 4000
+	mov word [points], 0
+	mov word [speed], 6000
 	jmp clear_keys
 level_two:
 	mov word [points], 0x10
+	mov word [speed], 3000
 	jmp clear_keys
 level_three:
-	mov word [speed], 500
+	mov word [speed], 1000
+	mov word [points], 0x10
 nf: call check_collision
 	je clear_keys                ; no collision
 	mov al, bl
@@ -327,7 +330,7 @@ replace_next_row:                    ; replace current row with rows above
 	dec dh                           ; replace row above ... and so on
 	jnz replace_next_row
 	call check_filled                ; check for other full rows
-	add word [points], 1
+	add word [points], 5
 	call update_score   
 cf_done:
 	popa  
@@ -515,9 +518,9 @@ points9:
 	mov si, lvl19
 	jmp another_part 
 points10:
-	mov word [speed], 2000
+	mov word [speed], 3000
 	mov word [points], 10
-	mov si, lvl21
+	mov si, lvl2
 	mov byte [level], 0x02
 	jmp another_part
 points11:
@@ -554,7 +557,7 @@ points20:
 	mov si, lvl3
 	mov word [points], 20
 	mov byte [level], 0x03
-	mov word [speed], 500
+	mov word [speed], 1000
 	jmp another_part
 points21:
 	mov si, lvl31
@@ -850,7 +853,7 @@ wait_for_loose:
 	mov	ah, 0x00
 	int	0x16
 	cmp	al, 'b'
-	je	clear;menu
+	je	restart_game;menu
 	cmp	al, 'm'
 	je	menu;menu
 	jmp	wait_for_loose
@@ -859,7 +862,25 @@ wait_for_loose:
 restart_game:
 	mov	ah, 0x00
 	int	0x16
+	cmp byte [level], 0x01
+	je r1
+	cmp byte [level], 0x02
+	je r2
+	cmp byte [level], 0x03
+	je r3
 	jmp	clear
+r1:
+	mov word [points], 0
+	mov word [speed], 6000
+	je	start_tetris1
+r2:
+	mov word [points], 10
+	mov word [speed], 3000
+	je	start_tetris2
+r3:
+	mov word [speed], 1000
+	mov word [points], 10
+	je	start_tetris3
 
 
 ;================================================
