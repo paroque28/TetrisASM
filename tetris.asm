@@ -83,168 +83,6 @@ ib: pop cx
 
 
 
-;Call the menu
-%macro menu 0
-
-;Set the video mode
-	mov ah, 0x00 	
-	mov al, 0x13	
-	int 0x10
-
-;Print the menu on screen	
-	call menu_msg1
-	call menu_msg2
-	call menu_msg3
-	call menu_msg4
-	;call menu_msg5
-	call wait_for_menu
-
-
-
-
-
-
-menu_msg1:
-	mov si, menu1
-	mov bl, 10  ;white color 
-	mov bh, 0   
-	mov cx, 1	
-	mov dh, 2	
-	mov dl, 17	
-	jmp msg_menu1
-
-msgret1:
-	ret
-;Call the level 1 msg from the menu	
-menu_msg2:
-	mov si, menu2
-	mov bl, 5   ;White color
-	mov bh, 0   
-	mov cx, 1	
-	mov dh, 6	
-	mov dl, 11	
-	jmp msg_menu2
-msgret2:
-	ret
-;Call the level 2 msg from the menu	
-menu_msg3:
-	mov si, menu3
-	mov bl, 1  ;White color
-	mov bh, 0   
-	mov cx, 1	
-	mov dh, 8	
-	mov dl, 11	
-	jmp msg_menu3
-msgret3:
-	ret
-;Call the level 3 msg from the menu		
-menu_msg4:
-	mov si, menu4
-	mov bl, 3   ;White color
-	mov bh, 0   
-	mov cx, 1	
-	mov dh, 10	
-	mov dl, 11	
-	jmp msg_menu4
-msgret4:
-	ret
-;Call the exit msg from the menu	
-menu_msg5:
-	mov si, menu5
-	mov bl, 15   ;White color
-	mov bh, 0   
-	mov cx, 1	
-	mov dh, 14	
-	mov dl, 11	
-	jmp msg_menu5
-msgret5:
-	ret
-
-	
-msg_menu1:
-	mov ah, 0x2	
-	int 10h
-	lodsb	
-	or al, al	
-	jz msgret1
-	mov ah, 0xa
-	int 10h		
-	inc dl		
-	jmp msg_menu1
-
-
-	
-;Prints the level 1 msg
-msg_menu2:
-	mov ah, 0x2	
-	int 10h
-	lodsb		
-	or al, al	
-	jz msgret2
-	mov ah, 0xa	
-	int 10h		
-	inc dl		
-	jmp msg_menu2	
-;Prints the level 2 msg
-msg_menu3:
-	mov ah, 0x2	
-	int 10h
-	lodsb		
-	or al, al	
-	jz msgret1
-	mov ah, 0xa	
-	int 10h		
-	inc dl		
-	jmp msg_menu3	
-;Prints the level 3 msg
-msg_menu4:
-	mov ah, 0x2	
-	int 10h
-	lodsb		
-	or al, al	
-	jz msgret4
-	mov ah, 0xa	
-	int 10h		
-	inc dl		
-	jmp msg_menu4	
-;Prints the exit  msg
-msg_menu5:
-	mov ah, 0x2	
-	int 10h
-	lodsb	
-	or al, al
-	jz msgret5
-	mov ah, 0xa	
-	int 10h		
-	inc dl		
-	jmp msg_menu5	
-
-;Call the level 1 msg from the menu	
-wait_for_menu:
-	mov	ah, 0x00
-	int	0x16
-	cmp	al, '1'
-	je	start_tetris1
-	cmp al, '2'
-	je  start_tetris2
-	cmp al,  '3'
-	je start_tetris3
-	;cmp al,  'e'
-	;je  start_tetris2
-	
-	jmp	wait_for_menu
-	
-
-	
-	
-	
-	
-	
-	
-	;jmp wait_for_menu
-
-	;jmp	wait_for_menu
-%endmacro
 	
 
 	
@@ -255,7 +93,7 @@ wait_for_menu:
 speed:      equ 0x7f03
 mov word [cte], 0x1
 
-menu
+jmp menu
 
 start_tetris1:
 	mov word [speed], 6000
@@ -265,12 +103,12 @@ start_tetris1:
 start_tetris2:
 	mov word [speed], 3000
 	mov byte [level], 0x02
-	mov word [points], 0
+	mov word [points], 10
 	je	start_tetris
 start_tetris3:
 	mov word [speed], 1000
 	mov byte [level], 0x03
-	mov word [points], 0
+	mov word [points], 20
 	je	start_tetris
 
 
@@ -288,6 +126,7 @@ clear:
 	call draw_msg_level
 
 new_brick:
+	;ret
 	mov byte [delay], 100            ; 3 * 100 = 300ms
 
 	select_brick                     ; returns the selected brick in AL
@@ -308,7 +147,7 @@ new_brick:
 	
 lp:
 	call check_collision
-	jne  clear                        ; collision -> game over
+	jne  defeat                        ; collision -> game over
 	call print_brick
 
 wait_or_keyboard:
@@ -331,7 +170,7 @@ wait_a:
 	je left_arrow                ; http://stackoverflow.com/questions/16939449/how-to-detect-arrow-keys-in-assembly
 	cmp cl, 'q'                ; q_key
 	je rotate_left
-	cmp cl, 'w'                ; e_key
+	cmp cl, 'w'                ; w_key
 	je rotate_right
 	cmp ch, 0x4d
 	je right_arrow
@@ -342,10 +181,10 @@ wait_a:
 	;je	score
 	;cmp cl, '2'
 	;je  level_two
-	;cmp cl,  '3'
-	;je  level_three
-	;cmp cl,  'e'
-	;je  halt
+	;cmp cl,  'h'
+	;je  new_brick
+	cmp cl,  'm'
+	je  menu
 
 	mov byte [delay], 10         ; every other key is fast down
 	jmp clear_keys
@@ -623,6 +462,8 @@ update_score:
 	je points28
 	cmp byte [points], 29
 	je points29
+	cmp byte [points], 30
+	je win
 	
 	
 
@@ -810,10 +651,229 @@ msg_lvl3:
 
 
 
+;================================================
+
+
+;Call the menu
+menu:
+
+;Set the video mode
+	mov ah, 0x00 	
+	mov al, 0x13	
+	int 0x10
+
+;Print the menu on screen	
+	call menu_msg1
+	call menu_msg2
+	call menu_msg3
+	call menu_msg4
+	call menu_msg5
+	call wait_for_menu
+
+
+
+
+
+
+menu_msg1:
+	mov si, menu1
+	mov bl, 10  ;white color 
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 2	
+	mov dl, 17	
+	jmp msg_menu1
+
+msgret1:
+	ret
+;Call the level 1 msg from the menu	
+menu_msg2:
+	mov si, menu2
+	mov bl, 5   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 6	
+	mov dl, 11	
+	jmp msg_menu2
+msgret2:
+	ret
+;Call the level 2 msg from the menu	
+menu_msg3:
+	mov si, menu3
+	mov bl, 1  ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 8	
+	mov dl, 11	
+	jmp msg_menu3
+msgret3:
+	ret
+;Call the level 3 msg from the menu		
+menu_msg4:
+	mov si, menu4
+	mov bl, 3   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 10	
+	mov dl, 11	
+	jmp msg_menu4
+msgret4:
+	ret
+;Call the exit msg from the menu	
+menu_msg5:
+	mov si, menu5
+	mov bl, 15   ;White color
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 14	
+	mov dl, 11	
+	jmp msg_menu5
+msgret5:
+	ret
+
+
+msg_menu1:
+	mov ah, 0x2	
+	int 10h
+	lodsb	
+	or al, al	
+	jz msgret1
+	mov ah, 0xa
+	int 10h		
+	inc dl		
+	jmp msg_menu1
+
+
+
+;call the printing functions for defeat and victory
+print_msg:
+	mov bh, 0   
+	mov cx, 1	
+	mov dh, 12;12	
+	mov dl, 2	;10
+;Prints the defeat or victory msg
+msg_loop:
+	mov ah, 0x2
+	int 10h
+	lodsb		
+	or al, al	
+	jz wait_for_loose
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_loop	
+
+	
+;Prints the level 1 msg
+msg_menu2:
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz msgret2
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_menu2	
+;Prints the level 2 msg
+msg_menu3:
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz msgret1
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_menu3	
+;Prints the level 3 msg
+msg_menu4:
+	mov ah, 0x2	
+	int 10h
+	lodsb		
+	or al, al	
+	jz msgret4
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_menu4	
+;Prints the exit  msg
+msg_menu5:
+	mov ah, 0x2	
+	int 10h
+	lodsb	
+	or al, al
+	jz msgret5
+	mov ah, 0xa	
+	int 10h		
+	inc dl		
+	jmp msg_menu5	
+
+;Call the level 1 msg from the menu	
+wait_for_menu:
+	mov	ah, 0x00
+	int	0x16
+	cmp	al, '1'
+	je	start_tetris1
+	cmp al, '2'
+	je  start_tetris2
+	cmp al,  '3'
+	je start_tetris3
+	cmp al,  'e'
+	je  defeat
+	
+	
+	jmp	wait_for_menu
+	
+	
+	
+	
+	
+	
+	
+	
+	;jmp wait_for_menu
+
+	;jmp	wait_for_menu
+
+;===============================================
+
+
+wait_for_loose:
+	mov	ah, 0x00
+	int	0x16
+	cmp	al, 'b'
+	je	clear;menu
+	cmp	al, 'm'
+	je	menu;menu
+	jmp	wait_for_loose
+
+;================================================
+
+;Call the defeat msg
+defeat:
+	mov ah, 0x00 	
+	mov al, 0x13	
+	int 0x10
+	mov si, go_msg
+	mov bl, 4   	;Red color
+	jmp print_msg
+
+win:
+mov ah, 0x00 	
+	mov al, 0x13	
+	int 0x10
+	mov si, v_msg
+	mov bl, 4   	;Red color
+	jmp print_msg
+
+
+
 ;------------------------------In game data-----------------------------	
 section .data
-	;v_msg	db 'WINNER (press b)', 0
-	;go_msg	db 'GAME OVER (press b)', 0
+	v_msg	db 'WINNER: b to restart or m to menu', 0
+	go_msg	db 'GAME OVER: b to restart or m to menu', 0
+	go_menu	db 'Or (press m) to go to the menu', 0
 	menu1	dw 'TETRIS', 0
 	menu2	dw 'LEVEL 1  (press 1)', 0
 	menu3	dw 'LEVEL 2  (press 2)', 0
@@ -851,9 +911,7 @@ section .data
 	lvl37	dw 'Level3     Points: 270', 0
 	lvl38	dw 'Level3     Points: 280', 0
 	lvl39	dw 'Level3     Points: 290', 0
-	points 		resw 1
-	cte		resw 1
-	next_brick 		resw 1
+
 	
 	;mov word [points], 0x00
 	;mov byte [nextBrick], 0x00
@@ -946,3 +1004,6 @@ bricks:
 
 section .bss
 	level resb 1
+	points 		resw 1
+	cte		resw 1
+	next_brick 		resw 1
