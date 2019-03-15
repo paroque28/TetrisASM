@@ -289,13 +289,16 @@ clear:
 
 new_brick:
 	mov byte [delay], 100            ; 3 * 100 = 300ms
-
+	;clean next brick
+	mov dx, 0x0404       ;where    ; start at row 4 and col 4
+	mov al, byte [next_brick] ;who
+	xor bx, bx ;color black
+	call print_next_brick_no_color
+	;get random brick
 	select_brick                     ; returns the selected brick in AL
 
 	;Print Next Brick
-	mov dx, 0x0404           ; start at row 4 and col 4
-	xor bx, bx
-	call print_next_brick_no_color
+	mov dx, 0x0404       ;where    ; start at row 4 and col 4
 	call print_next_brick
 
 	; Save next brick
