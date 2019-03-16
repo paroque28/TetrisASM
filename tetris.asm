@@ -67,7 +67,7 @@ ia: push cx
 	inc dh                           ; increment row
 	mov dl, field_left_col           ; set column
 	mov cx, field_width              ; width of box
-	mov bx, 0x8F                 ; color
+	mov bx, 0xFF                 ; color
 	call set_and_write
 	cmp dh, 21                       ; don't remove last line
 	je ib                            ; if last line jump
