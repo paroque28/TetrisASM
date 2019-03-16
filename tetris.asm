@@ -333,7 +333,7 @@ replace_next_row:                    ; replace current row with rows above
 	dec dh                           ; replace row above ... and so on
 	jnz replace_next_row
 	call check_filled                ; check for other full rows
-	add word [points], 5
+	add word [points], 1
 	call update_score   
 cf_done:
 	popa  
